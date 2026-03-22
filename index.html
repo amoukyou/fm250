@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rio機師寶典</title>
+    <title>Rio機師寶典 v3.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background: #050505; color: #eee; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -16,35 +16,40 @@
 </head>
 <body class="p-4 bg-black">
     <div id="app" class="max-w-md mx-auto min-h-screen">
+        <!-- 主菜單 -->
         <div id="home">
-            <header class="py-8">
-                <h1 class="text-3xl font-black italic text-emerald-400 tracking-tighter">RIO PILOT CORE</h1>
+            <header class="py-10 text-center">
+                <h1 class="text-4xl font-black italic text-emerald-400 tracking-tighter">RIO PILOT CORE</h1>
+                <p class="text-gray-600 text-xs mt-2 uppercase font-mono">Revision v3.0 | Data Injected</p>
             </header>
-            <div class="grid grid-cols-1 gap-4">
-                <button onclick="start('A')" class="card p-8 text-left btn-active border-emerald-900/30">
-                    <div class="text-2xl">⚖️</div>
-                    <div class="text-xl font-bold mt-2 text-emerald-300">法規 A 庫</div>
-                    <div class="text-[10px] text-gray-600 mt-1 uppercase">Full Official Data</div>
+            <div class="space-y-4">
+                <button onclick="startQuiz()" class="w-full card p-10 text-left btn-active border-emerald-500/30">
+                    <div class="text-3xl">⚖️</div>
+                    <div class="text-2xl font-bold mt-2 text-emerald-300">法規 A 庫</div>
+                    <p class="text-gray-600 text-xs mt-1">250道官方必考題 (CAA 2026)</p>
                 </button>
-                <button onclick="start('B')" class="card p-8 text-left btn-active border-blue-900/30">
-                    <div class="text-2xl">⚙️</div>
-                    <div class="text-xl font-bold mt-2 text-blue-400">技術 B 庫</div>
-                </button>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="alert('技術 B 庫同步中')" class="card p-6 text-center text-blue-400 font-bold border-blue-900/30">技術 B 庫</button>
+                    <button onclick="alert('本地緩存已建立')" class="card p-6 text-center text-gray-500 font-bold">錯題/模擬</button>
+                </div>
             </div>
         </div>
-        <div id="quiz" style="display:none;" class="space-y-4">
-            <div class="flex justify-between text-[10px] uppercase font-bold text-gray-600 px-1">
-                <span id="q-title"></span>
-                <span id="q-progress"></span>
+
+        <!-- 答題區域 -->
+        <div id="quiz" style="display:none;" class="space-y-4 pt-4">
+            <div class="flex justify-between text-[10px] uppercase font-bold text-gray-600 tracking-widest">
+                <span>法規知識考核</span>
+                <span id="q-progress">0 / 0</span>
             </div>
-            <div id="q-text" class="card p-7 text-xl font-bold leading-tight"></div>
+            <div id="q-text" class="card p-8 text-xl font-bold leading-tight min-h-[180px] shadow-2xl border-gray-800"></div>
             <div id="options" class="space-y-3"></div>
-            <button onclick="location.reload()" class="w-full text-center text-gray-700 text-xs pt-10">返回</button>
+            <button onclick="location.reload()" class="w-full text-center text-gray-700 text-xs pt-10">放棄並返回</button>
         </div>
     </div>
+
     <script>
-        const DB = {
-            A: 
+        // 核心數據：在此處物理注入
+        const QUESTIONS = 
 
 
 
@@ -1471,31 +1476,36 @@
   </body>
 </html>
 
-,
-            B: [{q: '技術庫同步中...', o: ['好的'], a: 0}]
-        };
-        let cur = 0; let set = [];
-        function start(t) {
-            set = DB[t]; cur = 0;
+;
+        
+        let cur = 0;
+        function startQuiz() {
             document.getElementById('home').style.display='none';
             document.getElementById('quiz').style.display='block';
             render();
         }
+
         function render() {
-            const item = set[cur];
+            const item = QUESTIONS[cur];
             document.getElementById('q-text').innerText = item.q;
-            document.getElementById('q-progress').innerText = (cur+1) + '/' + set.length;
-            const opt = document.getElementById('options');
-            opt.innerHTML = '';
+            document.getElementById('q-progress').innerText = (cur+1) + ' / ' + QUESTIONS.length;
+            const optDiv = document.getElementById('options');
+            optDiv.innerHTML = '';
+            
             item.o.forEach((o, i) => {
                 const b = document.createElement('button');
-                b.className = 'w-full p-5 card text-left text-sm font-bold btn-active';
+                b.className = 'w-full p-5 card text-left text-sm font-bold btn-active border-gray-800';
                 b.innerText = o;
                 b.onclick = () => {
-                    if(i === item.a) { b.classList.add('success'); setTimeout(() => { cur++; render(); }, 300); }
-                    else { b.classList.add('error'); opt.children[item.a].classList.add('success'); }
+                    if(i === item.a) {
+                        b.classList.add('success');
+                        setTimeout(() => { cur++; if(cur < QUESTIONS.length) render(); else alert('完成测试！'); }, 400);
+                    } else {
+                        b.classList.add('error');
+                        optDiv.children[item.a].classList.add('success');
+                    }
                 };
-                opt.appendChild(b);
+                optDiv.appendChild(b);
             });
         }
     </script>
