@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rio機師寶典</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #050505; color: #eee; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+        .card { background: #111; border: 1px solid #222; border-radius: 20px; }
+        .success { color: #00ffcc !important; border-color: #00ffcc !important; background: rgba(0, 255, 204, 0.1) !important; }
+        .error { color: #ff0055 !important; border-color: #ff0055 !important; background: rgba(255, 0, 85, 0.1) !important; }
+        .btn-active:active { transform: scale(0.96); }
+    </style>
+</head>
+<body class="p-4">
+    <div id="app" class="max-w-md mx-auto min-h-screen">
+        <div id="home">
+            <header class="py-8">
+                <h1 class="text-3xl font-black italic text-emerald-400">RIO PILOT CORE</h1>
+                <p class="text-gray-600 text-xs mt-1 tracking-widest uppercase">Ultra-light Vehicle Training v2.1</p>
+            </header>
+            <div class="grid grid-cols-1 gap-4">
+                <button onclick="start('A')" class="card p-8 text-left btn-active">
+                    <div class="text-2xl">⚖️</div>
+                    <div class="text-xl font-bold mt-2">法規 A 庫</div>
+                    <div class="text-xs text-gray-600 mt-1">CAA 官方全量數據</div>
+                </button>
+                <button onclick="start('B')" class="card p-8 text-left btn-active">
+                    <div class="text-2xl">⚙️</div>
+                    <div class="text-xl font-bold mt-2">技術 B 庫</div>
+                    <div class="text-xs text-gray-600 mt-1">「飛行大玩家」實戰精華</div>
+                </button>
+                <div class="flex gap-4">
+                    <button onclick="alert('近期上線')" class="card p-6 flex-1 text-center py-4 text-gray-500 font-bold">錯題集</button>
+                    <button onclick="alert('近期上線')" class="card p-6 flex-1 text-center py-4 bg-white text-black font-black">模擬考試</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="quiz" class="hidden space-y-4">
+            <div class="flex justify-between text-[10px] uppercase font-bold text-gray-700">
+                <span id="title">Category</span>
+                <span id="progress">0 / 0</span>
+            </div>
+            <div id="q-box" class="card p-6 text-xl font-bold leading-tight min-h-[140px]">載入中...</div>
+            <div id="options" class="space-y-3"></div>
+            <button onclick="goHome()" class="w-full text-center text-gray-700 text-xs pt-10">放棄練習，返回首頁</button>
+        </div>
+    </div>
+
+    <script>
+        const DB_A = JSON.parse(localStorage.getItem('DB_A_CACHE')) || []; 
+        let curSet = []; let cur = 0;
+
+        async function init() {
+            // 背景自動拉取全量數據
+            try {
+                const r = await fetch('https://github.com/amoukyou/fm250/raw/main/fm250.json');
+                const d = await r.json();
+                localStorage.setItem('DB_A_CACHE', JSON.stringify(d));
+            } catch(e) {}
+        }
+
+        function start(t) {
+            curSet = JSON.parse(localStorage.getItem('DB_A_CACHE')) || [];
+            if(curSet.length === 0) { alert('數據加載中，請連網刷新一次'); return; }
+            cur = 0;
+            document.getElementById('home').style.display='none';
+            document.getElementById('quiz').style.display='block';
+            render();
+        }
+
+        function render() {
+            const item = curSet[cur];
+            document.getElementById('q-box').innerText = item.q;
+            document.getElementById('progress').innerText = `${cur+1} / ${curSet.length}`;
+            const optDiv = document.getElementById('options');
+            optDiv.innerHTML = '';
+            item.o.forEach((o, i) => {
+                const b = document.createElement('button');
+                b.className = "w-full p-5 card text-left text-sm font-medium btn-active";
+                b.innerText = o;
+                b.onclick = () => {
+                    if(i === item.a) { b.classList.add('success'); setTimeout(() => { cur++; render(); }, 400); }
+                    else { b.classList.add('error'); }
+                };
+                optDiv.appendChild(b);
+            });
+        }
+
+        function goHome() { location.reload(); }
+        init();
+    </script>
+</body>
+</html>
