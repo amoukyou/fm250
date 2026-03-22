@@ -64,10 +64,10 @@ export default function AiExplanation(props: Props) {
     if (locale === 'zh-CN') {
       prompt.systemPrompt = prompt.systemPrompt.replace('繁體中文', '简体中文')
     } else if (locale === 'en') {
-      prompt.systemPrompt = 'You are an expert tutor for Taiwan ultralight aircraft pilot exams. Answer in English, concise and clear.'
+      prompt.systemPrompt = 'Flight exam tutor. Answer in English, max 80 words, no fluff.'
     }
 
-    const res = await callAi({ ...prompt, maxTokens: props.mode === 'deep' ? 600 : 400 })
+    const res = await callAi({ ...prompt, maxTokens: props.mode === 'deep' ? 150 : 120 })
     setLoading(false)
 
     if (res.error) {

@@ -55,7 +55,7 @@ export default function AiSummary(props: Props) {
       prompt.systemPrompt = 'You are an expert tutor for Taiwan ultralight aircraft pilot exams. Provide a study report in English, concise and encouraging.'
     }
 
-    const res = await callAi({ ...prompt, maxTokens: props.mode === 'exam' ? 800 : 400 })
+    const res = await callAi({ ...prompt, maxTokens: props.mode === 'exam' ? 300 : 100 })
     setLoading(false)
 
     if (res.error) {
