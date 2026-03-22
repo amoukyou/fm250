@@ -4,6 +4,7 @@ import { getBank, getQuestionsByBank } from '../data'
 import type { QAQuestion } from '../data'
 import { addAnswerRecord, toggleFavorite, isFavorite, saveProgress } from '../store/storage'
 import { StarIcon, ChevronLeftIcon, ChevronRightIcon } from '../components/Icons'
+import AiExplanation from '../components/AiExplanation'
 import { useI18n } from '../i18n/context'
 import { useLocalizedQuestion } from '../i18n/useLocalizedQuestion'
 
@@ -22,6 +23,7 @@ export default function QAPage() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showAnswer, setShowAnswer] = useState(false)
   const [rated, setRated] = useState(false)
+  const [lastRating, setLastRating] = useState<'know' | 'fuzzy' | 'dont_know' | null>(null)
   const [fav, setFav] = useState(() => questions[0] ? isFavorite(questions[0].id) : false)
   const [knowCount, setKnowCount] = useState(0)
   const [answeredCount, setAnsweredCount] = useState(0)
@@ -32,6 +34,7 @@ export default function QAPage() {
 
   function handleRate(rating: 'know' | 'fuzzy' | 'dont_know') {
     setRated(true)
+    setLastRating(rating)
     if (rating === 'know') setKnowCount((c) => c + 1)
     setAnsweredCount((c) => c + 1)
     addAnswerRecord(q.id, { correct: rating === 'know', selfRating: rating, timestamp: Date.now() })
@@ -46,6 +49,7 @@ export default function QAPage() {
     setCurrentIndex(idx)
     setShowAnswer(false)
     setRated(false)
+    setLastRating(null)
     setFav(isFavorite(questions[idx].id))
   }
 
@@ -87,11 +91,18 @@ export default function QAPage() {
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-2">
-                  <div className="inline-flex items-center gap-1.5 text-sm text-emerald-600 font-medium bg-emerald-50 px-3 py-1.5 rounded-full">
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
-                    {t('practice.recorded')}
+                <div className="space-y-3">
+                  <div className="text-center py-2">
+                    <div className="inline-flex items-center gap-1.5 text-sm text-emerald-600 font-medium bg-emerald-50 px-3 py-1.5 rounded-full">
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
+                      {t('practice.recorded')}
+                    </div>
                   </div>
+                  {lastRating && lastRating !== 'know' ? (
+                    <AiExplanation mode="qa" question={q.question} referenceAnswer={q.referenceAnswer} rating={lastRating} />
+                  ) : (
+                    <AiExplanation mode="deep" question={q.question} answer={q.referenceAnswer} />
+                  )}
                 </div>
               )}
             </div>

@@ -1,6 +1,7 @@
 import { useLocation, Link } from 'react-router-dom'
 import { PlaneTakeoffIcon, CheckCircleIcon } from '../components/Icons'
 import { useI18n } from '../i18n/context'
+import AiSummary from '../components/AiSummary'
 
 type ResultState = { total: number; correct: number; bankName: string; type: string }
 
@@ -73,6 +74,11 @@ export default function PracticeResultPage() {
           <div className="text-lg font-bold text-rose-600">{total - correct}</div>
           <div className="text-xs text-rose-500">{t('result.wrongN')}</div>
         </div>
+      </div>
+
+      {/* AI Summary */}
+      <div className="w-full">
+        <AiSummary mode="practice" total={total} correct={correct} bankName={bankName} type={type} />
       </div>
 
       <div className="w-full space-y-3 pt-2">

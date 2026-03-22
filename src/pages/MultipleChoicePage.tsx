@@ -1,16 +1,15 @@
 import { useState, useMemo } from 'react'
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { getBank, getQuestionsByBank, getQuestionsByCategory } from '../data'
 import type { SingleChoiceQuestion } from '../data'
 import { addAnswerRecord, toggleFavorite, isFavorite, saveProgress, getProgress } from '../store/storage'
 import { StarIcon, ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, XCircleIcon } from '../components/Icons'
+import AiExplanation from '../components/AiExplanation'
 import { useI18n } from '../i18n/context'
 import { useLocalizedQuestion } from '../i18n/useLocalizedQuestion'
 
 export default function MultipleChoicePage() {
   const { bankId, categoryId } = useParams<{ bankId: string; categoryId: string }>()
-  const [searchParams] = useSearchParams()
-  const isResume = searchParams.get('resume') === '1'
   const navigate = useNavigate()
   const { t } = useI18n()
   const { localizeQuestion } = useLocalizedQuestion()
@@ -31,7 +30,13 @@ export default function MultipleChoicePage() {
   const questions = rawQuestions.map((q) => localizeQuestion(q) as SingleChoiceQuestion)
 
   const savedProgress = getProgress()
-  const initialIndex = isResume && savedProgress ? savedProgress.currentIndex : 0
+  // Auto-resume if progress matches this bank/category/type
+  const canResume = savedProgress &&
+    savedProgress.bankId === bankId &&
+    (savedProgress.categoryId === categoryId || categoryId === 'all' || categoryId === 'mc-only') &&
+    savedProgress.questionType === 'single_choice' &&
+    savedProgress.currentIndex < rawQuestions.length
+  const initialIndex = canResume ? savedProgress!.currentIndex : 0
 
   const [currentIndex, setCurrentIndex] = useState(initialIndex)
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
@@ -119,6 +124,16 @@ export default function MultipleChoicePage() {
           <div className="px-5 py-3 bg-sky-50 border-t border-sky-100">
             <div className="text-xs font-semibold text-sky-600 mb-1">{t('practice.explanation')}</div>
             <div className="text-sm text-sky-800 leading-relaxed">{q.explanation}</div>
+          </div>
+        )}
+        {/* AI Explanation */}
+        {showResult && (
+          <div className="px-4 pb-4">
+            {!isCorrect && selectedOption ? (
+              <AiExplanation mode="mc-wrong" question={q.question} options={q.options} correctAnswer={q.answer} selectedAnswer={selectedOption} />
+            ) : (
+              <AiExplanation mode="deep" question={q.question} answer={q.answer} />
+            )}
           </div>
         )}
       </div>

@@ -1,5 +1,7 @@
 import { useLocation, Link } from 'react-router-dom'
 import type { SingleChoiceQuestion } from '../data'
+import AiSummary from '../components/AiSummary'
+import AiExplanation from '../components/AiExplanation'
 
 type ResultState = {
   questions: SingleChoiceQuestion[]
@@ -43,6 +45,18 @@ export default function MockResultPage() {
         </div>
       </div>
 
+      {/* AI Summary */}
+      <AiSummary
+        mode="exam"
+        total={total}
+        correct={score}
+        wrongQuestions={questions.filter((q) => answers[q.id] !== q.answer).map((q) => ({
+          question: q.question,
+          correctAnswer: q.answer,
+          selectedAnswer: answers[q.id] || '未作答',
+        }))}
+      />
+
       <div>
         <h2 className="text-lg font-bold text-gray-900 mb-3">
           答題詳情（{total - score} 題答錯）
@@ -74,6 +88,7 @@ export default function MockResultPage() {
                         {q.explanation}
                       </div>
                     )}
+                    <AiExplanation mode="mc-wrong" question={q.question} options={q.options} correctAnswer={q.answer} selectedAnswer={selected || '未作答'} />
                   </div>
                 )}
               </div>
