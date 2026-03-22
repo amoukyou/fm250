@@ -7,90 +7,111 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background: #050505; color: #eee; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
-        .card { background: #111; border: 1px solid #222; border-radius: 20px; }
-        .success { color: #00ffcc !important; border-color: #00ffcc !important; background: rgba(0, 255, 204, 0.1) !important; }
+        .card { background: #111; border: 1px solid #222; border-radius: 20px; transition: all 0.2s; }
+        .success { color: #00ffcc !important; border-color: #00ffcc !important; background: rgba(0, 255, 204, 0.1) !important; box-shadow: 0 0 15px rgba(0, 255, 204, 0.2); }
         .error { color: #ff0055 !important; border-color: #ff0055 !important; background: rgba(255, 0, 85, 0.1) !important; }
         .btn-active:active { transform: scale(0.96); }
+        #quiz { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="p-4">
+<body class="p-4 bg-black">
     <div id="app" class="max-w-md mx-auto min-h-screen">
         <div id="home">
             <header class="py-8">
-                <h1 class="text-3xl font-black italic text-emerald-400">RIO PILOT CORE</h1>
-                <p class="text-gray-600 text-xs mt-1 tracking-widest uppercase">Ultra-light Vehicle Training v2.1</p>
+                <h1 class="text-3xl font-black italic text-emerald-400 tracking-tighter">RIO PILOT CORE</h1>
+                <p class="text-gray-600 text-[10px] mt-1 tracking-widest uppercase font-mono">Ultra-light Vehicle Training v2.2</p>
             </header>
             <div class="grid grid-cols-1 gap-4">
-                <button onclick="start('A')" class="card p-8 text-left btn-active">
+                <button onclick="start('A')" class="card p-8 text-left btn-active border-emerald-900/30">
                     <div class="text-2xl">⚖️</div>
-                    <div class="text-xl font-bold mt-2">法規 A 庫</div>
-                    <div class="text-xs text-gray-600 mt-1">CAA 官方全量數據</div>
+                    <div class="text-xl font-bold mt-2 text-emerald-300">法規 A 庫</div>
+                    <div class="text-[10px] text-gray-600 mt-1 uppercase font-mono">CAA Official - 250 Questions</div>
                 </button>
-                <button onclick="start('B')" class="card p-8 text-left btn-active">
+                <button onclick="start('B')" class="card p-8 text-left btn-active border-blue-900/30">
                     <div class="text-2xl">⚙️</div>
-                    <div class="text-xl font-bold mt-2">技術 B 庫</div>
-                    <div class="text-xs text-gray-600 mt-1">「飛行大玩家」實戰精華</div>
+                    <div class="text-xl font-bold mt-2 text-blue-400">技術 B 庫</div>
+                    <div class="text-[10px] text-gray-600 mt-1 uppercase font-mono">Practitioner's Essence</div>
                 </button>
                 <div class="flex gap-4">
-                    <button onclick="alert('近期上線')" class="card p-6 flex-1 text-center py-4 text-gray-500 font-bold">錯題集</button>
-                    <button onclick="alert('近期上線')" class="card p-6 flex-1 text-center py-4 bg-white text-black font-black">模擬考試</button>
+                    <button onclick="showErrors()" class="card p-6 flex-1 text-center py-4 text-gray-500 font-bold border-gray-900">錯題集</button>
+                    <button onclick="startExam()" class="card p-6 flex-1 text-center py-4 bg-white text-black font-black border-none">模擬考試</button>
                 </div>
             </div>
         </div>
 
-        <div id="quiz" class="hidden space-y-4">
-            <div class="flex justify-between text-[10px] uppercase font-bold text-gray-700">
-                <span id="title">Category</span>
-                <span id="progress">0 / 0</span>
+        <div id="quiz" style="display:none;" class="space-y-4 pt-4">
+            <div class="flex justify-between text-[10px] uppercase font-bold text-gray-600 tracking-widest px-1">
+                <span id="q-title">Category</span>
+                <span id="q-progress">0 / 0</span>
             </div>
-            <div id="q-box" class="card p-6 text-xl font-bold leading-tight min-h-[140px]">載入中...</div>
+            <div id="q-text" class="card p-7 text-xl font-bold leading-snug min-h-[160px] border-gray-800 shadow-2xl">載入中...</div>
             <div id="options" class="space-y-3"></div>
-            <button onclick="goHome()" class="w-full text-center text-gray-700 text-xs pt-10">放棄練習，返回首頁</button>
+            <div class="flex gap-3 pt-6">
+                <button onclick="goHome()" class="flex-1 p-4 card text-center text-gray-600 font-bold text-sm btn-active border-gray-900">退出</button>
+                <button id="next-btn" onclick="nextQ()" class="flex-[2] p-4 card bg-emerald-700 text-white font-black text-sm btn-active border-none shadow-lg shadow-emerald-900/20">下一題</button>
+            </div>
         </div>
     </div>
 
     <script>
-        const DB_A = JSON.parse(localStorage.getItem('DB_A_CACHE')) || []; 
-        let curSet = []; let cur = 0;
+        // 核心數據硬核內嵌
+        const DB = {
+            A: JSON.parse('A_DATA_PLACEHOLDER'),
+            B: [
+                {q: "飛機增加銀行轉彎角度（Bank Angle）時，失速速度會？", o: ["不變", "增加", "減少"], a: 1},
+                {q: "電門開關（Ignition Switch）在 OFF 位置代表？", o: ["電瓶斷电", "磁電機接地", "油泵關閉"], a: 1}
+            ]
+        };
 
-        async function init() {
-            // 背景自動拉取全量數據
-            try {
-                const r = await fetch('https://github.com/amoukyou/fm250/raw/main/fm250.json');
-                const d = await r.json();
-                localStorage.setItem('DB_A_CACHE', JSON.stringify(d));
-            } catch(e) {}
-        }
+        let currentSet = []; let cur = 0;
+        let errors = JSON.parse(localStorage.getItem('rio_pilot_errors') || "[]");
 
-        function start(t) {
-            curSet = JSON.parse(localStorage.getItem('DB_A_CACHE')) || [];
-            if(curSet.length === 0) { alert('數據加載中，請連網刷新一次'); return; }
+        function start(type) {
+            currentSet = DB[type];
             cur = 0;
+            document.getElementById('q-title').innerText = type === 'A' ? '法規知識' : '實操技術';
             document.getElementById('home').style.display='none';
             document.getElementById('quiz').style.display='block';
             render();
         }
 
         function render() {
-            const item = curSet[cur];
-            document.getElementById('q-box').innerText = item.q;
-            document.getElementById('progress').innerText = `${cur+1} / ${curSet.length}`;
+            const item = currentSet[cur];
+            document.getElementById('q-text').innerText = item.q;
+            document.getElementById('q-progress').innerText = `${cur+1} / ${currentSet.length}`;
             const optDiv = document.getElementById('options');
             optDiv.innerHTML = '';
+            
             item.o.forEach((o, i) => {
                 const b = document.createElement('button');
-                b.className = "w-full p-5 card text-left text-sm font-medium btn-active";
+                b.className = "w-full p-5 card text-left text-sm font-bold btn-active border-gray-800";
                 b.innerText = o;
                 b.onclick = () => {
-                    if(i === item.a) { b.classList.add('success'); setTimeout(() => { cur++; render(); }, 400); }
-                    else { b.classList.add('error'); }
+                    const isCorrect = i === item.a;
+                    if(isCorrect) {
+                        b.classList.add('success');
+                        setTimeout(nextQ, 400); 
+                    } else {
+                        b.classList.add('error');
+                        optDiv.children[item.a].classList.add('success');
+                        if(!errors.find(e => e.q === item.q)) {
+                            errors.push(item);
+                            localStorage.setItem('rio_pilot_errors', JSON.stringify(errors));
+                        }
+                    }
                 };
                 optDiv.appendChild(b);
             });
         }
 
+        function nextQ() {
+            if(cur < currentSet.length - 1) { cur++; render(); }
+            else { alert('恭喜！完成本組訓練。'); goHome(); }
+        }
         function goHome() { location.reload(); }
-        init();
+        function showErrors() { alert('錯題集功能開發中，記錄已保存在本地。'); }
+        function startExam() { alert('模擬考模式將隨 B 庫完整同步後上線。'); }
     </script>
 </body>
 </html>
