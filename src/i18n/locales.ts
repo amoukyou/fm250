@@ -123,8 +123,12 @@ const translations = {
 
   // Manual
   'home.manual': { 'zh-TW': '學習資料', 'zh-CN': '学习资料', en: 'Study Material' },
-  'manual.title': { 'zh-TW': 'FM250 飛行手冊', 'zh-CN': 'FM250 飞行手册', en: 'FM250 Flight Manual' },
-  'manual.desc': { 'zh-TW': '中文版飛行手冊，隨時查閱', 'zh-CN': '中文版飞行手册，随时查阅', en: 'Chinese flight manual, read anytime' },
+  'manual.title': { 'zh-TW': 'FM250 飛行與維修手冊', 'zh-CN': 'FM250 飞行与维修手册', en: 'FM250 Flight & Maintenance Manual' },
+  'manual.desc': { 'zh-TW': '飛行手冊及緊急程序', 'zh-CN': '飞行手册及紧急程序', en: 'Flight manual & emergency procedures' },
+  'manual.tabEmergency': { 'zh-TW': '緊急程序', 'zh-CN': '紧急程序', en: 'Emergency' },
+  'manual.tabPdf': { 'zh-TW': '完整手冊', 'zh-CN': '完整手册', en: 'Full Manual' },
+  'manual.epSubtitle': { 'zh-TW': '摘錄自 FM250 飛行手冊第四章「緊急程序」', 'zh-CN': '摘录自 FM250 飞行手册第四章「紧急程序」', en: 'Extracted from FM250 Flight Manual Chapter 4 "Emergency Procedures"' },
+  'manual.openPdf': { 'zh-TW': '在新視窗打開 PDF', 'zh-CN': '在新窗口打开 PDF', en: 'Open PDF in new window' },
 
   // Search
   'search.placeholder': { 'zh-TW': '搜尋題目、選項、答案...', 'zh-CN': '搜索题目、选项、答案...', en: 'Search questions...' },
