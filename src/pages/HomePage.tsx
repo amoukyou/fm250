@@ -58,7 +58,7 @@ export default function HomePage() {
           </div>
           <div className="flex-1">
             <div className="text-sm font-semibold text-amber-800">{t('home.resume')}</div>
-            <div className="text-xs text-amber-600 mt-0.5">{t('home.resume.q')} {progress.currentIndex + 1} {t('home.resume.unit')}</div>
+            <div className="text-xs text-amber-600 mt-0.5">{t('home.resume.q')} {progress.currentIndex} {t('home.resume.unit')}</div>
           </div>
         </Link>
       )}

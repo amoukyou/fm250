@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getBank, getQuestionsByBank } from '../data'
 import type { QAQuestion } from '../data'
-import { addAnswerRecord, toggleFavorite, isFavorite, saveProgress } from '../store/storage'
+import { addAnswerRecord, toggleFavorite, isFavorite, saveProgress, getProgress } from '../store/storage'
 import { StarIcon, ChevronLeftIcon, ChevronRightIcon } from '../components/Icons'
 import AiExplanation from '../components/AiExplanation'
 import { useI18n } from '../i18n/context'
@@ -20,11 +20,19 @@ export default function QAPage() {
   }, [bankId])
   const questions = rawQuestions.map((q) => localizeQuestion(q) as QAQuestion)
 
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const savedProgress = getProgress()
+  const canResume = savedProgress &&
+    savedProgress.bankId === bankId &&
+    savedProgress.questionType === 'qa' &&
+    savedProgress.currentIndex > 0 &&
+    savedProgress.currentIndex < rawQuestions.length
+  const initialIndex = canResume ? savedProgress!.currentIndex : 0
+
+  const [currentIndex, setCurrentIndex] = useState(initialIndex)
   const [showAnswer, setShowAnswer] = useState(false)
   const [rated, setRated] = useState(false)
   const [lastRating, setLastRating] = useState<'know' | 'fuzzy' | 'dont_know' | null>(null)
-  const [fav, setFav] = useState(() => questions[0] ? isFavorite(questions[0].id) : false)
+  const [fav, setFav] = useState(() => questions[initialIndex] ? isFavorite(questions[initialIndex].id) : false)
   const [knowCount, setKnowCount] = useState(0)
   const [answeredCount, setAnsweredCount] = useState(0)
 
@@ -38,7 +46,7 @@ export default function QAPage() {
     if (rating === 'know') setKnowCount((c) => c + 1)
     setAnsweredCount((c) => c + 1)
     addAnswerRecord(q.id, { correct: rating === 'know', selfRating: rating, timestamp: Date.now() })
-    saveProgress({ bankId: bankId!, categoryId: categoryId!, questionType: 'qa', currentIndex, timestamp: Date.now() })
+    saveProgress({ bankId: bankId!, categoryId: categoryId!, questionType: 'qa', currentIndex: currentIndex + 1, timestamp: Date.now() })
   }
 
   function goTo(idx: number) {

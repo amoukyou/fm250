@@ -30,11 +30,11 @@ export default function MultipleChoicePage() {
   const questions = rawQuestions.map((q) => localizeQuestion(q) as SingleChoiceQuestion)
 
   const savedProgress = getProgress()
-  // Auto-resume if progress matches this bank/category/type
+  // Auto-resume: match bank + question type, and saved index is within bounds
   const canResume = savedProgress &&
     savedProgress.bankId === bankId &&
-    (savedProgress.categoryId === categoryId || categoryId === 'all' || categoryId === 'mc-only') &&
     savedProgress.questionType === 'single_choice' &&
+    savedProgress.currentIndex > 0 &&
     savedProgress.currentIndex < rawQuestions.length
   const initialIndex = canResume ? savedProgress!.currentIndex : 0
 
@@ -60,7 +60,7 @@ export default function MultipleChoicePage() {
     if (correct) setCorrectCount((c) => c + 1)
     setAnsweredCount((c) => c + 1)
     addAnswerRecord(q.id, { correct, timestamp: Date.now() })
-    saveProgress({ bankId: bankId!, categoryId: categoryId!, questionType: 'single_choice', currentIndex, timestamp: Date.now() })
+    saveProgress({ bankId: bankId!, categoryId: categoryId!, questionType: 'single_choice', currentIndex: currentIndex + 1, timestamp: Date.now() })
   }
 
   function goTo(idx: number) {
