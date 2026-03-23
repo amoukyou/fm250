@@ -1,24 +1,111 @@
-import { manualHtml } from '../data/manual-content'
+import { useState } from 'react'
+import { emergencyProcedures } from '../data/manual-content'
+
+type Tab = 'pdf' | 'emergency'
+
 export default function ManualPage() {
+  const [tab, setTab] = useState<Tab>('emergency')
+
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold text-gray-900">FM250 飛行手冊</h1>
-      <div
-        className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 overflow-x-auto prose prose-sm max-w-none
-          [&_h1]:text-lg [&_h1]:font-bold [&_h1]:text-gray-900 [&_h1]:mt-6 [&_h1]:mb-3
-          [&_h2]:text-base [&_h2]:font-bold [&_h2]:text-gray-800 [&_h2]:mt-5 [&_h2]:mb-2
-          [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-gray-700 [&_h3]:mt-4 [&_h3]:mb-2
-          [&_p]:text-sm [&_p]:leading-relaxed [&_p]:text-gray-700 [&_p]:my-2
-          [&_table]:w-full [&_table]:border-collapse [&_table]:text-xs [&_table]:my-3
-          [&_td]:border [&_td]:border-gray-200 [&_td]:px-2 [&_td]:py-1
-          [&_th]:border [&_th]:border-gray-200 [&_th]:px-2 [&_th]:py-1 [&_th]:bg-gray-50 [&_th]:font-semibold
-          [&_ul]:pl-5 [&_ul]:my-2 [&_ul]:text-sm
-          [&_ol]:pl-5 [&_ol]:my-2 [&_ol]:text-sm
-          [&_li]:my-1
-          [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-3
-          [&_strong]:font-semibold [&_strong]:text-gray-900"
-        dangerouslySetInnerHTML={{ __html: manualHtml }}
-      />
+      <h1 className="text-xl font-bold text-gray-900">FM250 飛行與維修手冊</h1>
+
+      {/* Tab switcher */}
+      <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
+        <button
+          onClick={() => setTab('emergency')}
+          className={`flex-1 py-2 rounded-lg text-sm font-medium transition ${
+            tab === 'emergency' ? 'bg-white text-rose-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          🚨 緊急程序
+        </button>
+        <button
+          onClick={() => setTab('pdf')}
+          className={`flex-1 py-2 rounded-lg text-sm font-medium transition ${
+            tab === 'pdf' ? 'bg-white text-sky-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          📖 完整手冊
+        </button>
+      </div>
+
+      {tab === 'emergency' ? <EmergencySection /> : <PdfSection />}
+    </div>
+  )
+}
+
+function EmergencySection() {
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-gray-500">摘錄自 FM250 飛行手冊第四章「緊急程序」</p>
+      {emergencyProcedures.map((proc) => (
+        <div
+          key={proc.id}
+          className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+        >
+          <button
+            onClick={() => setExpandedId(expandedId === proc.id ? null : proc.id)}
+            className="w-full text-left p-4 flex items-center justify-between hover:bg-gray-50 transition"
+          >
+            <span className="font-medium text-gray-900 text-sm">{proc.title}</span>
+            <svg
+              className={`w-4 h-4 text-gray-400 transition-transform ${expandedId === proc.id ? 'rotate-180' : ''}`}
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          {expandedId === proc.id && (
+            <div className="px-4 pb-4 border-t border-gray-100">
+              {proc.items.length > 0 && (
+                <div className="mt-3 space-y-1">
+                  {proc.items.map((item, i) => (
+                    <div key={i} className="flex text-sm">
+                      <span className="font-medium text-gray-700 w-28 shrink-0">{item.label}</span>
+                      <span className={`${item.value ? 'text-gray-600' : 'text-gray-400'}`}>
+                        {item.value || '—'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {proc.note && (
+                <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800 leading-relaxed whitespace-pre-line">
+                  {proc.note}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function PdfSection() {
+  const pdfUrl = import.meta.env.BASE_URL + 'fm250-manual.pdf'
+
+  return (
+    <div className="space-y-3">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden" style={{ height: '70vh' }}>
+        <iframe
+          src={pdfUrl}
+          className="w-full h-full border-0"
+          title="FM250 Flight Manual"
+        />
+      </div>
+      <a
+        href={pdfUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block text-center py-3 rounded-xl bg-white border border-gray-200 text-sm font-medium text-sky-600 no-underline hover:bg-sky-50 transition"
+      >
+        在新視窗打開 PDF
+      </a>
     </div>
   )
 }
